@@ -12,42 +12,55 @@ export interface ProductCardProps {
   slug: string;
   sku: string;
   categoryName?: string;
+  category_name?: string;
   price: number;
   salePrice?: number | null;
+  sale_price?: number | null;
   images: string[];
-  stockQuantity: number;
-  material?: string;
-  stoneType?: string;
+  stockQuantity?: number;
+  stock_quantity?: number;
+  material?: string | null;
+  stoneType?: string | null;
+  stone_type?: string | null;
   isNew?: boolean;
+  is_new?: boolean;
 }
 
 export function ProductCard({
   name,
   slug,
   categoryName,
+  category_name,
   price,
   salePrice,
+  sale_price,
   images,
   stockQuantity,
+  stock_quantity,
   material,
   isNew,
+  is_new,
 }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  const finalSalePrice = salePrice !== undefined ? salePrice : sale_price;
+  const finalStock = stockQuantity !== undefined ? stockQuantity : stock_quantity ?? 0;
+  const finalIsNew = isNew !== undefined ? isNew : is_new ?? false;
+  const finalCategory = categoryName || category_name;
+
   const primaryImage = images && images.length > 0 ? images[0] : "/placeholder-jewelry.jpg";
   const hoverImage = images && images.length > 1 ? images[1] : primaryImage;
 
-  const hasDiscount = salePrice !== null && salePrice !== undefined && salePrice < price;
-  const discountPercent = hasDiscount ? Math.round(((price - (salePrice as number)) / price) * 100) : 0;
-  const isOutOfStock = stockQuantity <= 0;
+  const hasDiscount = finalSalePrice !== null && finalSalePrice !== undefined && finalSalePrice < price;
+  const discountPercent = hasDiscount ? Math.round(((price - (finalSalePrice as number)) / price) * 100) : 0;
+  const isOutOfStock = finalStock <= 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isOutOfStock) return;
 
-    // Dispatch event or call cart store
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
@@ -72,7 +85,7 @@ export function ProductCard({
               %{discountPercent} İndirim
             </Badge>
           )}
-          {isNew && (
+          {finalIsNew && (
             <Badge variant="gold" size="sm" className="shadow-sm font-semibold">
               Yeni
             </Badge>
@@ -98,7 +111,7 @@ export function ProductCard({
           />
         </button>
 
-        {/* Product Image with Smooth Transition */}
+        {/* Product Image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={isHovered ? hoverImage : primaryImage}
@@ -107,7 +120,7 @@ export function ProductCard({
           loading="lazy"
         />
 
-        {/* Quick View Floating Overlay Button */}
+        {/* Quick View Floating Button */}
         <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:block">
           <div className="flex gap-2">
             <button
@@ -145,13 +158,11 @@ export function ProductCard({
       {/* Product Content Details */}
       <div className="p-4 flex flex-col flex-1 justify-between">
         <div>
-          {/* Category & Material */}
           <div className="flex items-center justify-between text-[11px] text-charcoal-400 mb-1">
-            <span>{categoryName || "Takı"}</span>
+            <span>{finalCategory || "Takı"}</span>
             {material && <span>{material}</span>}
           </div>
 
-          {/* Product Name */}
           <Link href={`/urun/${slug}`}>
             <h3 className="font-serif text-sm font-medium text-charcoal-900 group-hover:text-gold-700 line-clamp-1 transition-colors">
               {name}
@@ -159,13 +170,12 @@ export function ProductCard({
           </Link>
         </div>
 
-        {/* Price and Mobile Add Button */}
         <div className="mt-3 pt-2 border-t border-sand-100 flex items-center justify-between">
           <div className="flex flex-col">
             {hasDiscount ? (
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-charcoal-900 text-sm">
-                  {formatCurrency(salePrice)}
+                  {formatCurrency(finalSalePrice)}
                 </span>
                 <span className="text-[11px] text-charcoal-400 line-through">
                   {formatCurrency(price)}
@@ -178,7 +188,6 @@ export function ProductCard({
             )}
           </div>
 
-          {/* Mobile Direct Add Button */}
           <button
             type="button"
             onClick={handleAddToCart}
